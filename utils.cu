@@ -3,7 +3,7 @@
 #include <tuple>
 #include "cublas_v2.h"
 #pragma comment(lib, "cublas.lib")
-#pragma once
+
 
 float* toColumnMajor(float* A, float* B, size_t rows, size_t cols) {
 	for (size_t i = 0; i < rows; i++) {

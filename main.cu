@@ -8,8 +8,6 @@
 #pragma comment(lib, "cublas.lib")
 
 #include "utils.cuh"
-#include "cpp_utils.h"
-
 
 
 
@@ -24,8 +22,6 @@ std::tuple<float*, size_t, size_t> matrixMultiplicationWithCuda(float* a, size_t
 	cudaMalloc((void**)&cuda_a, sizeof(float) * a_size);
 	cudaMalloc((void**)&cuda_b, sizeof(float) * b_size);
 	cudaMalloc((void**)&cuda_c, sizeof(float) * c_size);
-
-	// print(temp_a, a_size);
 
 	cudaMemcpy(cuda_a, a, sizeof(float) * a_size, cudaMemcpyHostToDevice);
 	cudaMemcpy(cuda_b, b, sizeof(float) * b_size, cudaMemcpyHostToDevice);
@@ -52,14 +48,6 @@ std::tuple<float*, size_t, size_t> matrixMultiplicationWithCuda(float* a, size_t
 
 int main()
 {
-	cudaError_t cudaStatus;
-	
-	cudaStatus = cudaSetDevice(0);
-	if (cudaStatus != cudaSuccess) {
-	    fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-		return 1;
-	}
-
   float* A;
   float* B;
   float* C;
@@ -68,11 +56,28 @@ int main()
   std::tie(A, a_rows, a_cols) = readMatrixFromFile("matrix1.txt.txt");
   std::tie(B, b_rows, b_cols) = readMatrixFromFile("matrix2.txt.txt");
 
-	std::tie(C, c_rows, c_cols) = matrixMultiplicationWithCuda(A, a_rows, a_cols, B, b_cols, b_rows);
+  if (a_cols != b_rows) {
+    std::cout << "Impossible to multiply these two matrix";
+    return -1;
+  }
 
-	cudaStatus = cudaDeviceSynchronize();
-	
+	cudaError_t cudaStatus;
+	cudaStatus = cudaSetDevice(0);
+	if (cudaStatus != cudaSuccess) {
+	  fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+    std::tie(C, c_rows, c_cols) = matrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
+  }
+  else {
+    std::tie(C, c_rows, c_cols) = matrixMultiplicationWithCuda(A, a_rows, a_cols, B, b_cols, b_rows);
+
+    cudaStatus = cudaDeviceSynchronize();
+  }
+
   printMatrix(C, c_rows, c_cols);
+
+  free(A);
+  free(B);
+  free(C);
 
 	return 0;
 }
