@@ -4,12 +4,15 @@
 #include <tuple>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "cublas_v2.h"
 #pragma comment(lib, "cublas.lib")
 
+#include "cuda_timer.cuh"
 #include "utils.cuh"
 #include "algorithm1.cuh"
 #include "algorithm2.cuh"
+#include "strassen.cuh"
 
 
 
@@ -47,7 +50,6 @@ std::tuple<float*, size_t, size_t> matrixMultiplicationWithCuda(float* a, size_t
 }
 
 
-
 int main()
 {
   float* A;
@@ -63,34 +65,56 @@ int main()
     return -1;
   }
 
-  /*std::cout << "A: " << std::endl;
+  std::cout << "A: " << std::endl;
   printMatrix(A, a_rows, a_cols);
   std::cout << std::endl << "B: " << std::endl;
   printMatrix(B, b_rows, b_cols);
-  std::cout << std::endl;*/
+  std::cout << std::endl;
 
 	cudaError_t cudaStatus;
 	cudaStatus = cudaSetDevice(0);
+
+  float start = clock();
+  std::tie(C, c_rows, c_cols) = matrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
+  float cpu_time = (clock() - start) / CLOCKS_PER_SEC;
+
+  std::cout << "CPU time: " << cpu_time << "sec" << std::endl;
+
 	if (cudaStatus != cudaSuccess) {
 	  fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-    std::tie(C, c_rows, c_cols) = matrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
   }
   else {
+    CudaTimer timer;
 
+    timer.start();
+    std::tie(C, c_rows, c_cols) = matrixMultiplicationWithCuda(A, a_rows, a_cols, B, b_rows, b_cols);
+    timer.stop();
+
+    float time = timer.value();
+    
+    timer.start();
     std::tie(C, c_rows, c_cols) = partialMatrixMultiplication1(A, a_rows, a_cols, B, b_rows, b_cols);
-    cudaStatus = cudaDeviceSynchronize();
+    timer.stop();
+
+    float algo1_time = timer.value() ;
 
     writeMatrixToFile("algorithm1_out.txt", C, c_rows, c_cols);
 
     free(C);
-
+    
+    timer.start();
     std::tie(C, c_rows, c_cols) = partialMatrixMultiplication2(A, a_rows, a_cols, B, b_rows, b_cols);
-    cudaStatus = cudaDeviceSynchronize();
+    timer.stop();
+    
+    float algo2_time = timer.value();
+ 
+    std::cout << "Simple multiplication: " << time << "sec" << std::endl
+              << "Algo1 time: " << algo1_time << "sec" << std::endl 
+              << "Algo2 time: " << algo2_time << "sec" << std::endl;
 
-    writeMatrixToFile("algorithm2_out.txt", C, c_rows, c_cols);
   }
 
-  // printMatrix(C, c_rows, c_cols);
+  printMatrix(C, c_rows, c_cols);
 
   free(A);
   free(B);

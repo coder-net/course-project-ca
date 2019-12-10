@@ -15,12 +15,12 @@ std::tuple<float*, size_t, size_t> partialMatrixMultiplication2(float* A, size_t
   size_t b_partial;
 
   if (a_cols < b_cols * b_rows) {
-    a_partial = 1;
+    a_partial = 100;
     b_partial = b_cols;
   }
   else {
     a_partial = a_rows;
-    b_partial = 1;
+    b_partial = 100;
   }
 
   size_t n = a_rows, k = a_cols, m = b_cols;
