@@ -96,7 +96,35 @@ std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename) {
   return std::tie(matrix, rows, cols);
 }
 
+void writeMatrixToFile(std::string filename, float* matrix, size_t rows, size_t cols) {
+  std::ofstream f(filename);
+  if (!f.is_open()) {
+    throw std::runtime_error("Error with writing matrix to file: " + filename);
+  }
+  f << rows << " " << cols << std::endl;
+  for (size_t i = 0; i < rows; ++i) {
+    for (size_t j = 0; j < cols; ++j) {
+      f << matrix[i * cols + j] << " ";
+    }
+    f << std::endl;
+  }
+}
+
 template <typename T>
 T min(const T& lhs, const T& rhs) {
   return lhs < rhs ? lhs : rhs;
+}
+
+
+void copyElements(
+  float* src, size_t src_cols,
+  float* dst, size_t dst_cols,
+  size_t row_offset, size_t col_offset,
+  size_t rows_to_copy, size_t cols_to_copy
+) {
+  for (size_t i = 0; i < rows_to_copy; ++i) {
+    for (size_t j = 0; j < cols_to_copy; ++j) {
+      dst[(row_offset + i) * dst_cols + col_offset + j] = src[i * src_cols + j];
+    }
+  }
 }
