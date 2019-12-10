@@ -8,6 +8,7 @@
 #pragma comment(lib, "cublas.lib")
 
 #include "utils.cuh"
+#include "algorithm1.cuh"
 
 
 
@@ -53,13 +54,19 @@ int main()
   float* C;
   size_t a_rows, a_cols, b_rows, b_cols, c_rows, c_cols;
 
-  std::tie(A, a_rows, a_cols) = readMatrixFromFile("matrix1.txt.txt");
-  std::tie(B, b_rows, b_cols) = readMatrixFromFile("matrix2.txt.txt");
+  std::tie(A, a_rows, a_cols) = readMatrixFromFile("matrix.txt");
+  std::tie(B, b_rows, b_cols) = readMatrixFromFile("matrix2.txt");
 
   if (a_cols != b_rows) {
     std::cout << "Impossible to multiply these two matrix";
     return -1;
   }
+
+  std::cout << "A: " << std::endl;
+  printMatrix(A, a_rows, a_cols);
+  std::cout << std::endl << "B: " << std::endl;
+  printMatrix(B, b_rows, b_cols);
+  std::cout << std::endl;
 
 	cudaError_t cudaStatus;
 	cudaStatus = cudaSetDevice(0);
@@ -68,7 +75,7 @@ int main()
     std::tie(C, c_rows, c_cols) = matrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
   }
   else {
-    std::tie(C, c_rows, c_cols) = matrixMultiplicationWithCuda(A, a_rows, a_cols, B, b_cols, b_rows);
+    std::tie(C, c_rows, c_cols) = partialMatrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
 
     cudaStatus = cudaDeviceSynchronize();
   }

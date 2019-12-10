@@ -95,3 +95,8 @@ std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename) {
   f.close();
   return std::tie(matrix, rows, cols);
 }
+
+template <typename T>
+T min(const T& lhs, const T& rhs) {
+  return lhs < rhs ? lhs : rhs;
+}

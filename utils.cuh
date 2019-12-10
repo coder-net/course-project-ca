@@ -16,3 +16,6 @@ std::tuple<float*, size_t, size_t> matrixMultiplication(
 void printMatrix(float* A, size_t rows, size_t cols);
 
 std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename);
+
+template <typename T>
+T min(const T& lhs, const T& rhs);
