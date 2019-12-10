@@ -17,5 +17,14 @@ void printMatrix(float* A, size_t rows, size_t cols);
 
 std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename);
 
+void writeMatrixToFile(std::string filename, float* matrix, size_t rows, size_t cols);
+
 template <typename T>
 T min(const T& lhs, const T& rhs);
+
+void copyElements(
+  float* src, size_t src_cols,
+  float* dst, size_t dst_cols,
+  size_t row_offset, size_t col_offset,
+  size_t rows_to_copy, size_t cols_to_copy
+);

@@ -10,9 +10,18 @@
 #include "utils.cuh"
 
 
-std::tuple<float*, size_t, size_t> partialMatrixMultiplication1(float* A, size_t a_rows, size_t a_cols, float* B, size_t b_rows, size_t b_cols) {
-  size_t a_partial = 100;
-  size_t b_partial = 100;
+std::tuple<float*, size_t, size_t> partialMatrixMultiplication2(float* A, size_t a_rows, size_t a_cols, float* B, size_t b_rows, size_t b_cols) {
+  size_t a_partial;
+  size_t b_partial;
+
+  if (a_cols < b_cols * b_rows) {
+    a_partial = 1;
+    b_partial = b_cols;
+  }
+  else {
+    a_partial = a_rows;
+    b_partial = 1;
+  }
 
   size_t n = a_rows, k = a_cols, m = b_cols;
 
@@ -75,7 +84,7 @@ std::tuple<float*, size_t, size_t> partialMatrixMultiplication1(float* A, size_t
         }
       }
 
-    
+
       cudaMemcpy(A_d, A_temp, sizeof(float) * k * a_partial, cudaMemcpyHostToDevice);
       cudaMemcpy(B_d, B_temp, sizeof(float) * k * b_partial, cudaMemcpyHostToDevice);
 
