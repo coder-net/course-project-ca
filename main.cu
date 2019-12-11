@@ -12,6 +12,8 @@
 #include "utils.cuh"
 #include "algorithm1.cuh"
 #include "algorithm2.cuh"
+#include "matrix_multiplication.cuh"
+
 #include "strassen.cuh"
 
 
@@ -52,73 +54,119 @@ std::tuple<float*, size_t, size_t> matrixMultiplicationWithCuda(float* a, size_t
 
 int main()
 {
-  float* A;
-  float* B;
-  float* C;
+  double* h_A;
+  double* h_B;
+  double* h_C;
   size_t a_rows, a_cols, b_rows, b_cols, c_rows, c_cols;
+  
+  std::tie(h_A, a_rows, a_cols) = readMatrixFromFile("matrix3.txt");
+  std::tie(h_B, b_rows, b_cols) = readMatrixFromFile("matrix4.txt");
 
-  std::tie(A, a_rows, a_cols) = readMatrixFromFile("matrix1.txt");
-  std::tie(B, b_rows, b_cols) = readMatrixFromFile("matrix2.txt");
+  size_t M = a_rows, K = a_cols, N = b_cols;
 
-  if (a_cols != b_rows) {
-    std::cout << "Impossible to multiply these two matrix";
-    return -1;
-  }
+  h_C = (double*)malloc(sizeof(double) * M * N);
 
-  std::cout << "A: " << std::endl;
-  printMatrix(A, a_rows, a_cols);
-  std::cout << std::endl << "B: " << std::endl;
-  printMatrix(B, b_rows, b_cols);
-  std::cout << std::endl;
+  strassen_mm(h_A, h_B, h_C, M, K,N);
 
-	cudaError_t cudaStatus;
-	cudaStatus = cudaSetDevice(0);
+  printMatrix(h_C, M, N);
+  //int iter = 1;
+  //int check = 0;
+  //int depth = 2;
 
-  float start = clock();
-  std::tie(C, c_rows, c_cols) = matrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
-  float cpu_time = (clock() - start) / CLOCKS_PER_SEC;
+  //int sizeA = M * K;
+  //int sizeB = K * N;
+  //int sizeC = M * N;
+  //int memSizeA = sizeA * sizeof(double);
+  //int memSizeB = sizeB * sizeof(double);
+  //int memSizeC = sizeC * sizeof(double);
 
-  std::cout << "CPU time: " << cpu_time << "sec" << std::endl;
+  //double *h_C = (double *)malloc(memSizeC);
 
-	if (cudaStatus != cudaSuccess) {
-	  fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-  }
-  else {
-    CudaTimer timer;
+  //printMatrix(h_A, M, K);
+  //printMatrix(h_B, K, N);
 
-    timer.start();
-    std::tie(C, c_rows, c_cols) = matrixMultiplicationWithCuda(A, a_rows, a_cols, B, b_rows, b_cols);
-    timer.stop();
+  //double *d_A, *d_B, *d_C;
+  //cudaMalloc((void**)&d_A, memSizeA);
+  //cudaMalloc((void**)&d_B, memSizeB);
+  //cudaMalloc((void**)&d_C, memSizeC);
+  //cudaMemcpy(d_A, h_A, memSizeA, cudaMemcpyHostToDevice);
+  //cudaMemcpy(d_B, h_B, memSizeB, cudaMemcpyHostToDevice);
 
-    float time = timer.value();
-    
-    timer.start();
-    std::tie(C, c_rows, c_cols) = partialMatrixMultiplication1(A, a_rows, a_cols, B, b_rows, b_cols);
-    timer.stop();
 
-    float algo1_time = timer.value() ;
 
-    writeMatrixToFile("algorithm1_out.txt", C, c_rows, c_cols);
+  //CudaTimer ct;
+  //ct.start();
+  //  strassen(d_A, d_B, d_C, K, N, N, K, N, N, M, K, M, 2);
+  //ct.stop();
 
-    free(C);
-    
-    timer.start();
-    std::tie(C, c_rows, c_cols) = partialMatrixMultiplication2(A, a_rows, a_cols, B, b_rows, b_cols);
-    timer.stop();
-    
-    float algo2_time = timer.value();
- 
-    std::cout << "Simple multiplication: " << time << "sec" << std::endl
-              << "Algo1 time: " << algo1_time << "sec" << std::endl 
-              << "Algo2 time: " << algo2_time << "sec" << std::endl;
+  //double strassenTime = ct.value() / iter;
+  //cudaMemcpy(h_C, d_C, memSizeC, cudaMemcpyDeviceToHost);
 
-  }
-
-  printMatrix(C, c_rows, c_cols);
-
-  free(A);
-  free(B);
-  free(C);
+  //printMatrix(h_C, M, N);
+//  if (a_cols != b_rows) {
+//    std::cout << "Impossible to multiply these two matrix";
+//    return -1;
+//  }
+//
+//  std::cout << "A: " << std::endl;
+//  printMatrix(A, a_rows, a_cols);
+//  std::cout << std::endl << "B: " << std::endl;
+//  printMatrix(B, b_rows, b_cols);
+//  std::cout << std::endl;
+//
+//	cudaError_t cudaStatus;
+//	cudaStatus = cudaSetDevice(0);
+//
+//  float start = clock();
+//  //std::tie(C, c_rows, c_cols) = matrixMultiplication(A, a_rows, a_cols, B, b_rows, b_cols);
+//  float cpu_time = (clock() - start) / CLOCKS_PER_SEC;
+//
+//  std::cout << "CPU time: " << cpu_time << "sec" << std::endl;
+//
+//	if (cudaStatus != cudaSuccess) {
+//	  fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+//  }
+//  else {
+////    done_matrix_square(A, B, C, a_rows, a_cols, b_cols, 2);
+//    CudaTimer timer;
+//
+//
+//
+//
+//    double* A_d;
+//    double* B_d;
+//    double* C_d;
+//
+//cudaMalloc((void**)&A_d, sizeof(double) * a_rows * a_cols);
+//cudaMalloc((void**)&B_d, sizeof(double) * b_rows * b_cols);
+//cudaMalloc((void**)&C_d, sizeof(double) * N * M);
+//cudaMemcpy(A_d, A, sizeof(double) * M * K, cudaMemcpyHostToDevice);
+//cudaMemcpy(B_d, B, sizeof(double) * N * K, cudaMemcpyHostToDevice);
+//// cudaMemcpy(C_d, C, sizeof(float) * M * N, cudaMemcpyHostToDevice);
+//
+//    timer.start();
+//    strassen(A_d,  B_d, C_d, K, N, N, K, N, N, M,K, M, 5);
+//cudaDeviceSynchronize();
+//    timer.stop();
+//
+//    float time = timer.value();
+//    
+//    /*timer.start();
+//    std::tie(C, c_rows, c_cols) = matrixMultiplicationInParts(A, a_rows, a_cols, B, b_rows, b_cols, 5, 5);
+//    timer.stop();
+//
+//    float algo1_time = timer.value() ;*/
+//
+//    C = (double*)malloc(sizeof(double) * N * N);
+//    cudaMemcpy(C, C_d, sizeof(double) * M * N, cudaMemcpyDeviceToHost);
+//
+//  }
+//
+//  printMatrix(C, M, N);
+//
+//  free(A);
+//  free(B);
+//  // free(C);
 
 	return 0;
 }
