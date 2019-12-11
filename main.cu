@@ -35,8 +35,14 @@ int main()
   
   std::tie(h_A, xa, ya) = readMatrixFromFile("matrix1.txt");
   std::tie(h_B, xb, yb) = readMatrixFromFile("matrix2.txt");
+  
+  if (ya != xb) {
+    fprintf(stderr, "Cannot multiply these two matrices");
+    return -1;
+  }
 
   size_t M = xa, K = ya, N = yb;
+  
 
   h_C = (double*)malloc(sizeof(double) * M * N);
   
@@ -78,5 +84,6 @@ int main()
   free(h_B);
   free(h_C);
 
-	return 0;
+  return 0;
 }
+
