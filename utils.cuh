@@ -12,11 +12,11 @@ void GPU_add(double *A, double *B, double *C,
   int XA, int YA,
   double alpha, double beta);
 
-float* toColumnMajor(float* A, float* B, size_t rows, size_t cols);
+double* toColumnMajor(double* A, double* B, size_t rows, size_t cols);
 
-float* toRowMajor(float* A, float* B, size_t rows, size_t cols);
+double* toRowMajor(double* A, double* B, size_t rows, size_t cols);
 
-float* cudaMatrixMultiplication(float* A, size_t a_row, size_t a_col, float* B, size_t b_row, size_t b_col, float* C, float alpha);
+double* mm(double* A, double* B, double* C, size_t M, size_t K, size_t N);
 
 std::tuple<float*, size_t, size_t> matrixMultiplication(
         const float* A, size_t a_rows, size_t a_cols,
@@ -36,8 +36,10 @@ template <typename T>
 T max(const T& lhs, const T& rhs);
 
 void copyElements(
-  float* src, size_t src_cols,
-  float* dst, size_t dst_cols,
+  double* src, size_t src_cols,
+  double* dst, size_t dst_cols,
   size_t row_offset, size_t col_offset,
   size_t rows_to_copy, size_t cols_to_copy
 );
+
+void cuBLAS_mm(double* A, double* B, double* C, size_t M, size_t K, size_t N);

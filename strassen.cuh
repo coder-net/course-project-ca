@@ -27,10 +27,9 @@ size_t nearestTwoPower(size_t num) {
 
 
 void recursiveStrassen(double *A, double *B, double *C,
-  int lda, int ldb, int ldc,
-  int N,
-  int depth) {
-
+    int lda, int ldb, int ldc,
+    int N,
+    int depth) {
   int XA2 = N / 2;
   int XB2 = N / 2;
   int XC2 = N / 2;
@@ -167,7 +166,7 @@ void strassen_mm(
   cudaMemcpy(d_A, A_square, mem_size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, B_square, mem_size, cudaMemcpyHostToDevice);
 
-  recursiveStrassen(d_A, d_B, d_C, N, N, N, N, levels - 1);
+  recursiveStrassen(d_A, d_B, d_C, N, N, N, N, 3);
   cudaDeviceSynchronize();
 
   cudaMemcpy(C_square, d_C, mem_size, cudaMemcpyDeviceToHost);
