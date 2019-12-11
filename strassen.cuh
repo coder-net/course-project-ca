@@ -26,10 +26,16 @@ size_t nearestTwoPower(size_t num) {
 }
 
 
+// Winograd algorithm
 void recursiveStrassen(double *A, double *B, double *C,
     int lda, int ldb, int ldc,
     int N,
     int depth) {
+  if (N <= 8) {
+    GPU_mul(A, B, C, lda, ldb, ldc, N, N, N, N ,N, N, 1, 0);
+    return;
+  }
+
   int XA2 = N / 2;
   int XB2 = N / 2;
   int XC2 = N / 2;
@@ -127,7 +133,8 @@ void recursiveStrassen(double *A, double *B, double *C,
 
 void strassen_mm(
   double *A, double *B, double *C,
-  size_t m, size_t k, size_t n
+  size_t m, size_t k, size_t n,
+  size_t level_num
 ) {
   double* A_square;
   double* B_square;
@@ -166,7 +173,7 @@ void strassen_mm(
   cudaMemcpy(d_A, A_square, mem_size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, B_square, mem_size, cudaMemcpyHostToDevice);
 
-  recursiveStrassen(d_A, d_B, d_C, N, N, N, N, 3);
+  recursiveStrassen(d_A, d_B, d_C, N, N, N, N, level_num);
   cudaDeviceSynchronize();
 
   cudaMemcpy(C_square, d_C, mem_size, cudaMemcpyDeviceToHost);
