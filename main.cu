@@ -54,7 +54,15 @@ std::tuple<float*, size_t, size_t> matrixMultiplicationWithCuda(float* a, size_t
 
 int main()
 {
-  double* h_A;
+  cudaError_t cudaStatus;
+  cudaStatus = cudaSetDevice(0);
+
+  if (cudaStatus != cudaSuccess) {
+  	fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+    return -1;
+  }
+
+  double* h_A; // host A
   double* h_B;
   double* h_C;
   size_t a_rows, a_cols, b_rows, b_cols, c_rows, c_cols;
@@ -68,7 +76,12 @@ int main()
 
   strassen_mm(h_A, h_B, h_C, M, K,N);
 
-  printMatrix(h_C, M, N);
+  // printMatrix(h_C, M, N);
+  writeMatrixToFile("output.txt", h_C, M, N);
+
+  free(h_A);
+  free(h_B);
+  free(h_C);
   //int iter = 1;
   //int check = 0;
   //int depth = 2;

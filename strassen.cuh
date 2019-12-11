@@ -172,9 +172,17 @@ void strassen_mm(
 
   cudaMemcpy(C_square, d_C, mem_size, cudaMemcpyDeviceToHost);
 
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
+
   for (size_t i = 0; i < m; ++i) {
     for (size_t j = 0; j < n; ++j) {
       C[i * n + j] = C_square[i * N + j];
     }
   }
+
+  free(A_square);
+  free(B_square);
+  free(C_square);
 }

@@ -5,6 +5,29 @@
 #pragma comment(lib, "cublas.lib")
 
 
+
+
+void GPU_mul(double *A, double *B, double *C,
+  int lda, int ldb, int ldc,
+  int XA, int XB, int XC,
+  int YA, int YB, int YC,
+  double alpha, double beta) {
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, XB, YA, XA, &alpha, B, ldb, A, lda, &beta, C, ldc);
+  cublasDestroy(handle);
+}
+
+void GPU_add(double *A, double *B, double *C,
+  int lda, int ldb, int ldc,
+  int XA, int YA,
+  double alpha, double beta) {
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+  cublasDgeam(handle, CUBLAS_OP_N, CUBLAS_OP_N, XA, YA, &alpha, A, lda, &beta, B, ldb, C, ldc);
+  cublasDestroy(handle);
+}
+
 float* toColumnMajor(float* A, float* B, size_t rows, size_t cols) {
 	for (size_t i = 0; i < rows; i++) {
 		for (size_t j = 0; j < cols; ++j) {
@@ -72,7 +95,7 @@ std::tuple<float*, size_t, size_t> matrixMultiplication(
 }
 
 
-void printMatrix(float* A, size_t rows, size_t cols) {
+void printMatrix(double* A, size_t rows, size_t cols) {
   for (size_t i = 0; i < rows; ++i) {
     for (size_t j = 0; j < cols; ++j) {
       std::cout << A[i * cols + j] << " ";
@@ -81,14 +104,14 @@ void printMatrix(float* A, size_t rows, size_t cols) {
   }
 }
 
-std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename) {
+std::tuple<double*, size_t, size_t> readMatrixFromFile(std::string filename) {
   std::ifstream f(filename);
   if (!f.is_open()) {
     throw std::runtime_error("No such file");
   }
   size_t rows, cols;
   f >> rows >> cols;
-  float* matrix = (float*)malloc(sizeof(float) * cols * rows);
+  double* matrix = (double*)malloc(sizeof(double) * cols * rows);
   for (size_t i = 0; i < cols * rows; ++i) {
     f >> matrix[i];
   }
@@ -96,7 +119,8 @@ std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename) {
   return std::tie(matrix, rows, cols);
 }
 
-void writeMatrixToFile(std::string filename, float* matrix, size_t rows, size_t cols) {
+
+void writeMatrixToFile(std::string filename, double* matrix, size_t rows, size_t cols) {
   std::ofstream f(filename);
   if (!f.is_open()) {
     throw std::runtime_error("Error with writing matrix to file: " + filename);
@@ -113,6 +137,11 @@ void writeMatrixToFile(std::string filename, float* matrix, size_t rows, size_t 
 template <typename T>
 T min(const T& lhs, const T& rhs) {
   return lhs < rhs ? lhs : rhs;
+}
+
+template <typename T>
+T max(const T& lhs, const T& rhs) {
+  return lhs > rhs ? lhs : rhs;
 }
 
 
