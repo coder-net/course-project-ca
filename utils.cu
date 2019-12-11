@@ -5,7 +5,39 @@
 #pragma comment(lib, "cublas.lib")
 
 
-float* toColumnMajor(float* A, float* B, size_t rows, size_t cols) {
+
+
+void GPU_mul(double *A, double *B, double *C,
+  int lda, int ldb, int ldc,
+  int XA, int XB, int XC,
+  int YA, int YB, int YC,
+  double alpha, double beta) {
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, XB, YA, XA, &alpha, B, ldb, A, lda, &beta, C, ldc);
+  cublasDestroy(handle);
+}
+
+void GPU_add(double *A, double *B, double *C,
+  int lda, int ldb, int ldc,
+  int XA, int YA,
+  double alpha, double beta) {
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+  cublasDgeam(handle, CUBLAS_OP_N, CUBLAS_OP_N, XA, YA, &alpha, A, lda, &beta, B, ldb, C, ldc);
+  cublasDestroy(handle);
+}
+
+void cuBLAS_mm(double *d_A, double *d_B, double *d_C, size_t M, size_t N, size_t K) {
+  double one = 1.0;
+  double zero = 0.0;
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &one, d_B, N, d_A, K, &zero, d_C, N);
+  cublasDestroy(handle);
+}
+
+double* toColumnMajor(double* A, double* B, size_t rows, size_t cols) {
 	for (size_t i = 0; i < rows; i++) {
 		for (size_t j = 0; j < cols; ++j) {
 			B[j * rows + i] = A[i * cols + j];
@@ -14,7 +46,7 @@ float* toColumnMajor(float* A, float* B, size_t rows, size_t cols) {
 	return B;
 }
 
-float* toRowMajor(float* A, float* B, size_t rows, size_t cols) {
+double* toRowMajor(double* A, double* B, size_t rows, size_t cols) {
 	for (size_t i = 0; i < rows; i++) {
 		for (size_t j = 0; j < cols; ++j) {
 			B[i * cols + j] = A[j * rows + i];
@@ -24,28 +56,29 @@ float* toRowMajor(float* A, float* B, size_t rows, size_t cols) {
 }
 
 
-float* cudaMatrixMultiplication(float* A, size_t a_row, size_t a_col, float* B, size_t b_row, size_t b_col, float* C, float alpha) {
+double* mm(double* A, double* B, double* C,  size_t M, size_t K, size_t N) {
 	// formula: alpha * A * B  + beta * C
-	float beta = 0;
+  double alpha = 1.0;
+	double beta = 0;
 	cublasHandle_t handle;
 
 	cublasCreate(&handle);
 
-	cublasSgemm(
+	cublasDgemm(
 		handle,
 		CUBLAS_OP_C,
 		CUBLAS_OP_C,
-		a_row,
-		b_col,
-		a_col, // equal to a_col
+		M,
+		N,
+		K, // equal to a_col
 		&alpha,
 		A,
-		a_col,
+		K,
 		B,
-		b_col,
+		N,
 		&beta,
 		C,
-		a_row
+		M
 	);
 
 	cublasDestroy(handle);
@@ -72,7 +105,7 @@ std::tuple<float*, size_t, size_t> matrixMultiplication(
 }
 
 
-void printMatrix(float* A, size_t rows, size_t cols) {
+void printMatrix(double* A, size_t rows, size_t cols) {
   for (size_t i = 0; i < rows; ++i) {
     for (size_t j = 0; j < cols; ++j) {
       std::cout << A[i * cols + j] << " ";
@@ -81,14 +114,14 @@ void printMatrix(float* A, size_t rows, size_t cols) {
   }
 }
 
-std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename) {
+std::tuple<double*, size_t, size_t> readMatrixFromFile(std::string filename) {
   std::ifstream f(filename);
   if (!f.is_open()) {
     throw std::runtime_error("No such file");
   }
   size_t rows, cols;
   f >> rows >> cols;
-  float* matrix = (float*)malloc(sizeof(float) * cols * rows);
+  double* matrix = (double*)malloc(sizeof(double) * cols * rows);
   for (size_t i = 0; i < cols * rows; ++i) {
     f >> matrix[i];
   }
@@ -96,7 +129,8 @@ std::tuple<float*, size_t, size_t> readMatrixFromFile(std::string filename) {
   return std::tie(matrix, rows, cols);
 }
 
-void writeMatrixToFile(std::string filename, float* matrix, size_t rows, size_t cols) {
+
+void writeMatrixToFile(std::string filename, double* matrix, size_t rows, size_t cols) {
   std::ofstream f(filename);
   if (!f.is_open()) {
     throw std::runtime_error("Error with writing matrix to file: " + filename);
@@ -115,10 +149,15 @@ T min(const T& lhs, const T& rhs) {
   return lhs < rhs ? lhs : rhs;
 }
 
+template <typename T>
+T max(const T& lhs, const T& rhs) {
+  return lhs > rhs ? lhs : rhs;
+}
+
 
 void copyElements(
-  float* src, size_t src_cols,
-  float* dst, size_t dst_cols,
+  double* src, size_t src_cols,
+  double* dst, size_t dst_cols,
   size_t row_offset, size_t col_offset,
   size_t rows_to_copy, size_t cols_to_copy
 ) {
@@ -128,3 +167,4 @@ void copyElements(
     }
   }
 }
+
