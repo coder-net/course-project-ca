@@ -12,3 +12,9 @@
 # Пояснительная записка
 
 Смотри `explanation.ipynb`. В `README.md` не поддерживается `latex`.
+
+# Примечание
+
+`gpu_mm` - matrix multiplication on _GPU_
+
+`cpu_mm` - matrix multiplication on _CPU_
