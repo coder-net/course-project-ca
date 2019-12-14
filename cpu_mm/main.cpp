@@ -8,22 +8,12 @@
 #include "strassen.h"
 
 
-void fillMatrix(double *M, size_t X, size_t Y) {
-  std::srand(std::time(nullptr));
-  for (size_t i = 0; i < X; ++i) {
-    for (size_t j = 0; j < Y; ++j) {
-      M[i * Y + j] = std::rand() % 10;
-    }
-  }
-}
-
-
 
 int main() {
   double *A, *B, *C;
   size_t xa, ya, xb, yb;
-  std::tie(A, xa, ya) = readMatrixFromFile("test_matrices/matrix1024_1.txt");
-  std::tie(B, xb, yb) = readMatrixFromFile("test_matrices/matrix1024_2.txt");
+  std::tie(A, xa, ya) = readMatrixFromFile("../test_matrices/matrix1024_1.txt");
+  std::tie(B, xb, yb) = readMatrixFromFile("../test_matrices/matrix1024_2.txt");
 
   size_t iteration = 10;
 

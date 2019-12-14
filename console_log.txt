@@ -1,0 +1,30 @@
+2
+Strassen: 0.32 microseconds
+Simple_matrix_multiplication: 0.13 microseconds
+4
+Strassen: 1.13 microseconds
+Simple_matrix_multiplication: 0.77 microseconds
+8
+Strassen: 6.65 microseconds
+Simple_matrix_multiplication: 5.28 microseconds
+16
+Strassen: 45.76 microseconds
+Simple_matrix_multiplication: 31.8 microseconds
+32
+Strassen: 205.19 microseconds
+Simple_matrix_multiplication: 151.19 microseconds
+64
+Strassen: 1252.38 microseconds
+Simple_matrix_multiplication: 1130.98 microseconds
+128
+Strassen: 7606.71 microseconds
+Simple_matrix_multiplication: 9386.89 microseconds
+256
+Strassen: 53529.2 microseconds
+Simple_matrix_multiplication: 98562 microseconds
+512
+Strassen: 394859 microseconds
+Simple_matrix_multiplication: 870147 microseconds
+1024
+Strassen: 2.79572e+06 microseconds
+Simple_matrix_multiplication: 2.88097e+07 microseconds
